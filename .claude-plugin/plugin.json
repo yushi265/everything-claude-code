@@ -1,7 +1,7 @@
 {
   "name": "everything-claude-code",
   "version": "1.2.0",
-  "description": "Complete collection of battle-tested Claude Code configs from an Anthropic hackathon winner - agents, skills, hooks, and rules evolved over 10+ months of intensive daily use",
+  "description": "Anthropicハッカソン優勝者による実戦で鍛えられたClaude Code設定の完全コレクション - 10ヶ月以上の集中的な日常使用で進化したエージェント、スキル、フック、ルール",
   "author": {
     "name": "Affaan Mustafa",
     "url": "https://x.com/affaanmustafa"

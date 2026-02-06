@@ -6,7 +6,7 @@
       "env": {
         "GITHUB_PERSONAL_ACCESS_TOKEN": "YOUR_GITHUB_PAT_HERE"
       },
-      "description": "GitHub operations - PRs, issues, repos"
+      "description": "GitHub操作 - PR、イシュー、リポジトリ"
     },
     "firecrawl": {
       "command": "npx",
@@ -14,78 +14,78 @@
       "env": {
         "FIRECRAWL_API_KEY": "YOUR_FIRECRAWL_KEY_HERE"
       },
-      "description": "Web scraping and crawling"
+      "description": "Webスクレイピングとクローリング"
     },
     "supabase": {
       "command": "npx",
       "args": ["-y", "@supabase/mcp-server-supabase@latest", "--project-ref=YOUR_PROJECT_REF"],
-      "description": "Supabase database operations"
+      "description": "Supabaseデータベース操作"
     },
     "memory": {
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-memory"],
-      "description": "Persistent memory across sessions"
+      "description": "セッション間の永続的メモリ"
     },
     "sequential-thinking": {
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
-      "description": "Chain-of-thought reasoning"
+      "description": "思考の連鎖による推論"
     },
     "vercel": {
       "type": "http",
       "url": "https://mcp.vercel.com",
-      "description": "Vercel deployments and projects"
+      "description": "Vercelデプロイメントとプロジェクト"
     },
     "railway": {
       "command": "npx",
       "args": ["-y", "@railway/mcp-server"],
-      "description": "Railway deployments"
+      "description": "Railwayデプロイメント"
     },
     "cloudflare-docs": {
       "type": "http",
       "url": "https://docs.mcp.cloudflare.com/mcp",
-      "description": "Cloudflare documentation search"
+      "description": "Cloudflareドキュメント検索"
     },
     "cloudflare-workers-builds": {
       "type": "http",
       "url": "https://builds.mcp.cloudflare.com/mcp",
-      "description": "Cloudflare Workers builds"
+      "description": "Cloudflare Workersビルド"
     },
     "cloudflare-workers-bindings": {
       "type": "http",
       "url": "https://bindings.mcp.cloudflare.com/mcp",
-      "description": "Cloudflare Workers bindings"
+      "description": "Cloudflare Workersバインディング"
     },
     "cloudflare-observability": {
       "type": "http",
       "url": "https://observability.mcp.cloudflare.com/mcp",
-      "description": "Cloudflare observability/logs"
+      "description": "Cloudflare可観測性/ログ"
     },
     "clickhouse": {
       "type": "http",
       "url": "https://mcp.clickhouse.cloud/mcp",
-      "description": "ClickHouse analytics queries"
+      "description": "ClickHouse分析クエリ"
     },
     "context7": {
       "command": "npx",
       "args": ["-y", "@context7/mcp-server"],
-      "description": "Live documentation lookup"
+      "description": "ライブドキュメント検索"
     },
     "magic": {
       "command": "npx",
       "args": ["-y", "@magicuidesign/mcp@latest"],
-      "description": "Magic UI components"
+      "description": "Magic UIコンポーネント"
     },
     "filesystem": {
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-filesystem", "/path/to/your/projects"],
-      "description": "Filesystem operations (set your path)"
+      "description": "ファイルシステム操作（パスを設定してください）"
     }
   },
   "_comments": {
-    "usage": "Copy the servers you need to your ~/.claude.json mcpServers section",
-    "env_vars": "Replace YOUR_*_HERE placeholders with actual values",
-    "disabling": "Use disabledMcpServers array in project config to disable per-project",
-    "context_warning": "Keep under 10 MCPs enabled to preserve context window"
+    "usage": "必要なサーバーを ~/.claude.json の mcpServers セクションにコピーしてください",
+    "env_vars": "YOUR_*_HERE プレースホルダーを実際の値に置き換えてください",
+    "disabling": "プロジェクト設定の disabledMcpServers 配列を使用してプロジェクトごとに無効化できます",
+    "context_warning": "コンテキストウィンドウを保持するため、有効なMCPは10個未満に抑えてください"
   }
 }

@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /**
- * SessionStart Hook - Load previous context on new session
+ * SessionStartフック - 新しいセッションで以前のコンテキストを読み込む
  *
- * Cross-platform (Windows, macOS, Linux)
+ * クロスプラットフォーム（Windows、macOS、Linux）
  *
- * Runs when a new Claude session starts. Checks for recent session
- * files and notifies Claude of available context to load.
+ * 新しいClaudeセッションが開始されたときに実行される。最近のセッション
+ * ファイルをチェックし、読み込み可能なコンテキストをClaudeに通知する。
  */
 
 const {
@@ -22,12 +22,12 @@ async function main() {
   const sessionsDir = getSessionsDir();
   const learnedDir = getLearnedSkillsDir();
 
-  // Ensure directories exist
+  // ディレクトリが存在することを確認
   ensureDir(sessionsDir);
   ensureDir(learnedDir);
 
-  // Check for recent session files (last 7 days)
-  // Match both old format (YYYY-MM-DD-session.tmp) and new format (YYYY-MM-DD-shortid-session.tmp)
+  // 最近のセッションファイルをチェック（過去7日間）
+  // 旧形式（YYYY-MM-DD-session.tmp）と新形式（YYYY-MM-DD-shortid-session.tmp）の両方にマッチ
   const recentSessions = findFiles(sessionsDir, '*-session.tmp', { maxAge: 7 });
 
   if (recentSessions.length > 0) {
@@ -36,29 +36,29 @@ async function main() {
     log(`[SessionStart] Latest: ${latest.path}`);
   }
 
-  // Check for learned skills
+  // 学習したスキルをチェック
   const learnedSkills = findFiles(learnedDir, '*.md');
 
   if (learnedSkills.length > 0) {
-    log(`[SessionStart] ${learnedSkills.length} learned skill(s) available in ${learnedDir}`);
+    log(`[SessionStart] ${learnedSkills.length} 個の学習したスキルが ${learnedDir} にあります`);
   }
 
-  // Check for available session aliases
+  // 利用可能なセッションエイリアスをチェック
   const aliases = listAliases({ limit: 5 });
 
   if (aliases.length > 0) {
     const aliasNames = aliases.map(a => a.name).join(', ');
-    log(`[SessionStart] ${aliases.length} session alias(es) available: ${aliasNames}`);
-    log(`[SessionStart] Use /sessions load <alias> to continue a previous session`);
+    log(`[SessionStart] ${aliases.length} 個のセッションエイリアスが利用可能: ${aliasNames}`);
+    log(`[SessionStart] /sessions load <alias> を使用して以前のセッションを継続できます`);
   }
 
-  // Detect and report package manager
+  // パッケージマネージャーを検出して報告
   const pm = getPackageManager();
-  log(`[SessionStart] Package manager: ${pm.name} (${pm.source})`);
+  log(`[SessionStart] パッケージマネージャー: ${pm.name} (${pm.source})`);
 
-  // If package manager was detected via fallback, show selection prompt
+  // フォールバック経由で検出された場合、選択プロンプトを表示
   if (pm.source === 'fallback' || pm.source === 'default') {
-    log('[SessionStart] No package manager preference found.');
+    log('[SessionStart] パッケージマネージャーの設定が見つかりません。');
     log(getSelectionPrompt());
   }
 
@@ -66,6 +66,6 @@ async function main() {
 }
 
 main().catch(err => {
-  console.error('[SessionStart] Error:', err.message);
-  process.exit(0); // Don't block on errors
+  console.error('[SessionStart] エラー:', err.message);
+  process.exit(0); // エラー時もブロックしない
 });

@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
 /**
- * Stop Hook: Check for console.log statements in modified files
- * 
- * This hook runs after each response and checks if any modified
- * JavaScript/TypeScript files contain console.log statements.
- * It provides warnings to help developers remember to remove
- * debug statements before committing.
+ * Stopフック: 変更されたファイルのconsole.log文をチェック
+ *
+ * このフックは各レスポンス後に実行され、変更された
+ * JavaScript/TypeScriptファイルにconsole.log文が含まれているかチェックする。
+ * 開発者がコミット前にデバッグ文を削除することを忘れないように
+ * 警告を提供する。
  */
 
 const { execSync } = require('child_process');
@@ -14,23 +14,23 @@ const fs = require('fs');
 
 let data = '';
 
-// Read stdin
+// 標準入力を読み込む
 process.stdin.on('data', chunk => {
   data += chunk;
 });
 
 process.stdin.on('end', () => {
   try {
-    // Check if we're in a git repository
+    // Gitリポジトリ内かチェック
     try {
       execSync('git rev-parse --git-dir', { stdio: 'pipe' });
     } catch {
-      // Not in a git repo, just pass through the data
+      // Gitリポジトリでない場合、データをそのまま渡す
       console.log(data);
       process.exit(0);
     }
 
-    // Get list of modified files
+    // 変更されたファイルのリストを取得
     const files = execSync('git diff --name-only HEAD', {
       encoding: 'utf8',
       stdio: ['pipe', 'pipe', 'pipe']
@@ -40,22 +40,22 @@ process.stdin.on('end', () => {
 
     let hasConsole = false;
 
-    // Check each file for console.log
+    // 各ファイルでconsole.logをチェック
     for (const file of files) {
       const content = fs.readFileSync(file, 'utf8');
       if (content.includes('console.log')) {
-        console.error(`[Hook] WARNING: console.log found in ${file}`);
+        console.error(`[Hook] 警告: ${file} にconsole.logが見つかりました`);
         hasConsole = true;
       }
     }
 
     if (hasConsole) {
-      console.error('[Hook] Remove console.log statements before committing');
+      console.error('[Hook] コミット前にconsole.log文を削除してください');
     }
   } catch (_error) {
-    // Silently ignore errors (git might not be available, etc.)
+    // エラーを静かに無視（gitが利用できない場合など）
   }
 
-  // Always output the original data
+  // 常に元のデータを出力
   console.log(data);
 });

@@ -1,14 +1,14 @@
 #!/bin/bash
-# Strategic Compact Suggester
-# Runs on PreToolUse or periodically to suggest manual compaction at logical intervals
+# 戦略的コンパクト提案ツール
+# PreToolUseまたは定期的に実行され、論理的な区切りで手動コンパクションを提案する
 #
-# Why manual over auto-compact:
-# - Auto-compact happens at arbitrary points, often mid-task
-# - Strategic compacting preserves context through logical phases
-# - Compact after exploration, before execution
-# - Compact after completing a milestone, before starting next
+# 自動コンパクトではなく手動を使用する理由:
+# - 自動コンパクトは任意のポイントで発生し、多くの場合タスクの途中
+# - 戦略的コンパクションは論理的なフェーズを通じてコンテキストを保持
+# - 探索後、実行前にコンパクト
+# - マイルストーン完了後、次を開始する前にコンパクト
 #
-# Hook config (in ~/.claude/settings.json):
+# フック設定 (~/.claude/settings.json 内):
 # {
 #   "hooks": {
 #     "PreToolUse": [{
@@ -21,17 +21,17 @@
 #   }
 # }
 #
-# Criteria for suggesting compact:
-# - Session has been running for extended period
-# - Large number of tool calls made
-# - Transitioning from research/exploration to implementation
-# - Plan has been finalized
+# コンパクトを提案する基準:
+# - セッションが長時間実行されている
+# - 大量のツール呼び出しが行われた
+# - 調査/探索から実装への移行
+# - プランが確定した
 
-# Track tool call count (increment in a temp file)
+# ツール呼び出し回数を追跡 (一時ファイルでインクリメント)
 COUNTER_FILE="/tmp/claude-tool-count-$$"
 THRESHOLD=${COMPACT_THRESHOLD:-50}
 
-# Initialize or increment counter
+# カウンターを初期化または増加
 if [ -f "$COUNTER_FILE" ]; then
   count=$(cat "$COUNTER_FILE")
   count=$((count + 1))
@@ -41,12 +41,12 @@ else
   count=1
 fi
 
-# Suggest compact after threshold tool calls
+# しきい値のツール呼び出し後にコンパクトを提案
 if [ "$count" -eq "$THRESHOLD" ]; then
-  echo "[StrategicCompact] $THRESHOLD tool calls reached - consider /compact if transitioning phases" >&2
+  echo "[StrategicCompact] $THRESHOLD 回のツール呼び出しに達しました - フェーズ移行時は /compact を検討してください" >&2
 fi
 
-# Suggest at regular intervals after threshold
+# しきい値後は定期的に提案
 if [ "$count" -gt "$THRESHOLD" ] && [ $((count % 25)) -eq 0 ]; then
-  echo "[StrategicCompact] $count tool calls - good checkpoint for /compact if context is stale" >&2
+  echo "[StrategicCompact] $count 回のツール呼び出し - コンテキストが古い場合は /compact の良いチェックポイントです" >&2
 fi

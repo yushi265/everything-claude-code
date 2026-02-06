@@ -6,12 +6,12 @@ on:
   pull_request:
     branches: [main]
 
-# Prevent duplicate runs
+# 重複実行を防止
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-# Minimal permissions
+# 最小限のパーミッション
 permissions:
   contents: read
 
@@ -28,7 +28,7 @@ jobs:
         node: ['18.x', '20.x', '22.x']
         pm: [npm, pnpm, yarn, bun]
         exclude:
-          # Bun has limited Windows support
+          # BunのWindowsサポートは限定的
           - os: windows-latest
             pm: bun
 
@@ -41,7 +41,7 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
 
-      # Package manager setup
+      # パッケージマネージャーのセットアップ
       - name: Setup pnpm
         if: matrix.pm == 'pnpm'
         uses: pnpm/action-setup@v4
@@ -52,7 +52,7 @@ jobs:
         if: matrix.pm == 'bun'
         uses: oven-sh/setup-bun@v2
 
-      # Cache configuration
+      # キャッシュ設定
       - name: Get npm cache directory
         if: matrix.pm == 'npm'
         id: npm-cache-dir
@@ -88,7 +88,7 @@ jobs:
         id: yarn-cache-dir
         shell: bash
         run: |
-          # Try Yarn Berry first, fall back to Yarn v1
+          # 最初にYarn Berryを試し、Yarn v1にフォールバック
           if yarn config get cacheFolder >/dev/null 2>&1; then
             echo "dir=$(yarn config get cacheFolder)" >> $GITHUB_OUTPUT
           else
@@ -113,26 +113,26 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-bun-
 
-      # Install dependencies
+      # 依存関係をインストール
       - name: Install dependencies
         shell: bash
         run: |
           case "${{ matrix.pm }}" in
             npm) npm ci ;;
             pnpm) pnpm install ;;
-            # --ignore-engines required for Node 18 compat with some devDependencies (e.g., markdownlint-cli)
+            # 一部のdevDependencies（例: markdownlint-cli）のNode 18互換性に--ignore-enginesが必要
             yarn) yarn install --ignore-engines ;;
             bun) bun install ;;
             *) echo "Unsupported package manager: ${{ matrix.pm }}" && exit 1 ;;
           esac
 
-      # Run tests
+      # テストを実行
       - name: Run tests
         run: node tests/run-all.js
         env:
           CLAUDE_CODE_PACKAGE_MANAGER: ${{ matrix.pm }}
 
-      # Upload test artifacts on failure
+      # 失敗時にテストアーティファクトをアップロード
       - name: Upload test artifacts
         if: failure()
         uses: actions/upload-artifact@v4
@@ -192,7 +192,7 @@ jobs:
 
       - name: Run npm audit
         run: npm audit --audit-level=high
-        continue-on-error: true  # Allows PR to proceed, but marks job as failed if vulnerabilities found
+        continue-on-error: true  # PRを続行できるが、脆弱性が見つかった場合はジョブを失敗としてマーク
 
   lint:
     name: Lint

@@ -1,10 +1,10 @@
 /**
- * Session Manager Library for Claude Code
- * Provides core session CRUD operations for listing, loading, and managing sessions
+ * Claude Code用セッションマネージャーライブラリ
+ * セッションの一覧表示、読み込み、管理のためのコアCRUD操作を提供
  *
- * Sessions are stored as markdown files in ~/.claude/sessions/ with format:
- * - YYYY-MM-DD-session.tmp (old format)
- * - YYYY-MM-DD-<short-id>-session.tmp (new format)
+ * セッションは ~/.claude/sessions/ にマークダウンファイルとして保存され、形式は:
+ * - YYYY-MM-DD-session.tmp (旧形式)
+ * - YYYY-MM-DD-<short-id>-session.tmp (新形式)
  */
 
 const fs = require('fs');
@@ -16,46 +16,46 @@ const {
   log
 } = require('./utils');
 
-// Session filename pattern: YYYY-MM-DD-[short-id]-session.tmp
-// The short-id is optional (old format) and can be 8+ alphanumeric characters
-// Matches: "2026-02-01-session.tmp" or "2026-02-01-a1b2c3d4-session.tmp"
+// セッションファイル名パターン: YYYY-MM-DD-[short-id]-session.tmp
+// short-idはオプション（旧形式）で、8文字以上の英数字
+// マッチ: "2026-02-01-session.tmp" または "2026-02-01-a1b2c3d4-session.tmp"
 const SESSION_FILENAME_REGEX = /^(\d{4}-\d{2}-\d{2})(?:-([a-z0-9]{8,}))?-session\.tmp$/;
 
 /**
- * Parse session filename to extract metadata
- * @param {string} filename - Session filename (e.g., "2026-01-17-abc123-session.tmp" or "2026-01-17-session.tmp")
- * @returns {object|null} Parsed metadata or null if invalid
+ * セッションファイル名を解析してメタデータを抽出する
+ * @param {string} filename - セッションファイル名（例: "2026-01-17-abc123-session.tmp" または "2026-01-17-session.tmp"）
+ * @returns {object|null} 解析されたメタデータまたは無効な場合はnull
  */
 function parseSessionFilename(filename) {
   const match = filename.match(SESSION_FILENAME_REGEX);
   if (!match) return null;
 
   const dateStr = match[1];
-  // match[2] is undefined for old format (no ID)
+  // match[2]は旧形式（IDなし）の場合undefined
   const shortId = match[2] || 'no-id';
 
   return {
     filename,
     shortId,
     date: dateStr,
-    // Convert date string to Date object
+    // 日付文字列をDateオブジェクトに変換
     datetime: new Date(dateStr)
   };
 }
 
 /**
- * Get the full path to a session file
- * @param {string} filename - Session filename
- * @returns {string} Full path to session file
+ * セッションファイルへのフルパスを取得する
+ * @param {string} filename - セッションファイル名
+ * @returns {string} セッションファイルへのフルパス
  */
 function getSessionPath(filename) {
   return path.join(getSessionsDir(), filename);
 }
 
 /**
- * Read and parse session markdown content
- * @param {string} sessionPath - Full path to session file
- * @returns {string|null} Session content or null if not found
+ * セッションのマークダウンコンテンツを読み込んで解析する
+ * @param {string} sessionPath - セッションファイルへのフルパス
+ * @returns {string|null} セッションコンテンツまたは見つからない場合はnull
  */
 function getSessionContent(sessionPath) {
   if (!fs.existsSync(sessionPath)) {
@@ -66,9 +66,9 @@ function getSessionContent(sessionPath) {
 }
 
 /**
- * Parse session metadata from markdown content
- * @param {string} content - Session markdown content
- * @returns {object} Parsed metadata
+ * マークダウンコンテンツからセッションメタデータを解析する
+ * @param {string} content - セッションのマークダウンコンテンツ
+ * @returns {object} 解析されたメタデータ
  */
 function parseSessionMetadata(content) {
   const metadata = {
@@ -84,31 +84,31 @@ function parseSessionMetadata(content) {
 
   if (!content) return metadata;
 
-  // Extract title from first heading
+  // 最初の見出しからタイトルを抽出
   const titleMatch = content.match(/^#\s+(.+)$/m);
   if (titleMatch) {
     metadata.title = titleMatch[1].trim();
   }
 
-  // Extract date
+  // 日付を抽出
   const dateMatch = content.match(/\*\*Date:\*\*\s*(\d{4}-\d{2}-\d{2})/);
   if (dateMatch) {
     metadata.date = dateMatch[1];
   }
 
-  // Extract started time
+  // 開始時刻を抽出
   const startedMatch = content.match(/\*\*Started:\*\*\s*([\d:]+)/);
   if (startedMatch) {
     metadata.started = startedMatch[1];
   }
 
-  // Extract last updated
+  // 最終更新時刻を抽出
   const updatedMatch = content.match(/\*\*Last Updated:\*\*\s*([\d:]+)/);
   if (updatedMatch) {
     metadata.lastUpdated = updatedMatch[1];
   }
 
-  // Extract completed items
+  // 完了したアイテムを抽出
   const completedSection = content.match(/### Completed\s*\n([\s\S]*?)(?=###|\n\n|$)/);
   if (completedSection) {
     const items = completedSection[1].match(/- \[x\]\s*(.+)/g);
@@ -117,7 +117,7 @@ function parseSessionMetadata(content) {
     }
   }
 
-  // Extract in-progress items
+  // 進行中のアイテムを抽出
   const progressSection = content.match(/### In Progress\s*\n([\s\S]*?)(?=###|\n\n|$)/);
   if (progressSection) {
     const items = progressSection[1].match(/- \[ \]\s*(.+)/g);
@@ -126,13 +126,13 @@ function parseSessionMetadata(content) {
     }
   }
 
-  // Extract notes
+  // ノートを抽出
   const notesSection = content.match(/### Notes for Next Session\s*\n([\s\S]*?)(?=###|\n\n|$)/);
   if (notesSection) {
     metadata.notes = notesSection[1].trim();
   }
 
-  // Extract context to load
+  // ロードするコンテキストを抽出
   const contextSection = content.match(/### Context to Load\s*\n```\n([\s\S]*?)```/);
   if (contextSection) {
     metadata.context = contextSection[1].trim();
@@ -142,9 +142,9 @@ function parseSessionMetadata(content) {
 }
 
 /**
- * Calculate statistics for a session
- * @param {string} sessionPath - Full path to session file
- * @returns {object} Statistics object
+ * セッションの統計を計算する
+ * @param {string} sessionPath - セッションファイルへのフルパス
+ * @returns {object} 統計オブジェクト
  */
 function getSessionStats(sessionPath) {
   const content = getSessionContent(sessionPath);
@@ -161,13 +161,13 @@ function getSessionStats(sessionPath) {
 }
 
 /**
- * Get all sessions with optional filtering and pagination
- * @param {object} options - Options object
- * @param {number} options.limit - Maximum number of sessions to return
- * @param {number} options.offset - Number of sessions to skip
- * @param {string} options.date - Filter by date (YYYY-MM-DD format)
- * @param {string} options.search - Search in short ID
- * @returns {object} Object with sessions array and pagination info
+ * オプションのフィルタリングとページネーション付きですべてのセッションを取得する
+ * @param {object} options - オプションオブジェクト
+ * @param {number} options.limit - 返すセッションの最大数
+ * @param {number} options.offset - スキップするセッションの数
+ * @param {string} options.date - 日付でフィルタ（YYYY-MM-DD形式）
+ * @param {string} options.search - ショートIDで検索
+ * @returns {object} セッション配列とページネーション情報を含むオブジェクト
  */
 function getAllSessions(options = {}) {
   const {
@@ -187,7 +187,7 @@ function getAllSessions(options = {}) {
   const sessions = [];
 
   for (const entry of entries) {
-    // Skip non-files (only process .tmp files)
+    // ファイル以外はスキップ（.tmpファイルのみ処理）
     if (!entry.isFile() || !entry.name.endsWith('.tmp')) continue;
 
     const filename = entry.name;
@@ -195,19 +195,19 @@ function getAllSessions(options = {}) {
 
     if (!metadata) continue;
 
-    // Apply date filter
+    // 日付フィルタを適用
     if (date && metadata.date !== date) {
       continue;
     }
 
-    // Apply search filter (search in short ID)
+    // 検索フィルタを適用（ショートIDで検索）
     if (search && !metadata.shortId.includes(search)) {
       continue;
     }
 
     const sessionPath = path.join(sessionsDir, filename);
 
-    // Get file stats
+    // ファイル統計を取得
     const stats = fs.statSync(sessionPath);
 
     sessions.push({
@@ -220,10 +220,10 @@ function getAllSessions(options = {}) {
     });
   }
 
-  // Sort by modified time (newest first)
+  // 変更時刻でソート（新しい順）
   sessions.sort((a, b) => b.modifiedTime - a.modifiedTime);
 
-  // Apply pagination
+  // ページネーションを適用
   const paginatedSessions = sessions.slice(offset, offset + limit);
 
   return {
@@ -236,10 +236,10 @@ function getAllSessions(options = {}) {
 }
 
 /**
- * Get a single session by ID (short ID or full path)
- * @param {string} sessionId - Short ID or session filename
- * @param {boolean} includeContent - Include session content
- * @returns {object|null} Session object or null if not found
+ * IDでセッションを1つ取得する（ショートIDまたはフルパス）
+ * @param {string} sessionId - ショートIDまたはセッションファイル名
+ * @param {boolean} includeContent - セッションコンテンツを含めるか
+ * @returns {object|null} セッションオブジェクトまたは見つからない場合はnull
  */
 function getSessionById(sessionId, includeContent = false) {
   const sessionsDir = getSessionsDir();
@@ -258,7 +258,7 @@ function getSessionById(sessionId, includeContent = false) {
 
     if (!metadata) continue;
 
-    // Check if session ID matches (short ID or full filename without .tmp)
+    // セッションIDがマッチするかチェック（ショートIDまたは.tmpなしのフルファイル名）
     const shortIdMatch = metadata.shortId !== 'no-id' && metadata.shortId.startsWith(sessionId);
     const filenameMatch = filename === sessionId || filename === `${sessionId}.tmp`;
     const noIdMatch = metadata.shortId === 'no-id' && filename === `${sessionId}-session.tmp`;
@@ -291,9 +291,9 @@ function getSessionById(sessionId, includeContent = false) {
 }
 
 /**
- * Get session title from content
- * @param {string} sessionPath - Full path to session file
- * @returns {string} Title or default text
+ * コンテンツからセッションタイトルを取得する
+ * @param {string} sessionPath - セッションファイルへのフルパス
+ * @returns {string} タイトルまたはデフォルトテキスト
  */
 function getSessionTitle(sessionPath) {
   const content = getSessionContent(sessionPath);
@@ -303,9 +303,9 @@ function getSessionTitle(sessionPath) {
 }
 
 /**
- * Format session size in human-readable format
- * @param {string} sessionPath - Full path to session file
- * @returns {string} Formatted size (e.g., "1.2 KB")
+ * セッションサイズを人間が読める形式でフォーマットする
+ * @param {string} sessionPath - セッションファイルへのフルパス
+ * @returns {string} フォーマットされたサイズ（例: "1.2 KB"）
  */
 function getSessionSize(sessionPath) {
   if (!fs.existsSync(sessionPath)) {
@@ -321,10 +321,10 @@ function getSessionSize(sessionPath) {
 }
 
 /**
- * Write session content to file
- * @param {string} sessionPath - Full path to session file
- * @param {string} content - Markdown content to write
- * @returns {boolean} Success status
+ * セッションコンテンツをファイルに書き込む
+ * @param {string} sessionPath - セッションファイルへのフルパス
+ * @param {string} content - 書き込むマークダウンコンテンツ
+ * @returns {boolean} 成功状態
  */
 function writeSessionContent(sessionPath, content) {
   try {
@@ -337,10 +337,10 @@ function writeSessionContent(sessionPath, content) {
 }
 
 /**
- * Append content to a session
- * @param {string} sessionPath - Full path to session file
- * @param {string} content - Content to append
- * @returns {boolean} Success status
+ * セッションにコンテンツを追記する
+ * @param {string} sessionPath - セッションファイルへのフルパス
+ * @param {string} content - 追記するコンテンツ
+ * @returns {boolean} 成功状態
  */
 function appendSessionContent(sessionPath, content) {
   try {
@@ -353,9 +353,9 @@ function appendSessionContent(sessionPath, content) {
 }
 
 /**
- * Delete a session file
- * @param {string} sessionPath - Full path to session file
- * @returns {boolean} Success status
+ * セッションファイルを削除する
+ * @param {string} sessionPath - セッションファイルへのフルパス
+ * @returns {boolean} 成功状態
  */
 function deleteSession(sessionPath) {
   try {
@@ -371,9 +371,9 @@ function deleteSession(sessionPath) {
 }
 
 /**
- * Check if a session exists
- * @param {string} sessionPath - Full path to session file
- * @returns {boolean} True if session exists
+ * セッションが存在するかチェックする
+ * @param {string} sessionPath - セッションファイルへのフルパス
+ * @returns {boolean} セッションが存在する場合true
  */
 function sessionExists(sessionPath) {
   return fs.existsSync(sessionPath) && fs.statSync(sessionPath).isFile();

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Validate agent markdown files have required frontmatter
+ * エージェントマークダウンファイルに必須のフロントマターがあることを検証する
  */
 
 const fs = require('fs');
@@ -10,9 +10,9 @@ const AGENTS_DIR = path.join(__dirname, '../../agents');
 const REQUIRED_FIELDS = ['model', 'tools'];
 
 function extractFrontmatter(content) {
-  // Strip BOM if present (UTF-8 BOM: \uFEFF)
+  // BOMが存在する場合は削除 (UTF-8 BOM: \uFEFF)
   const cleanContent = content.replace(/^\uFEFF/, '');
-  // Support both LF and CRLF line endings
+  // LFとCRLFの両方の改行に対応
   const match = cleanContent.match(/^---\r?\n([\s\S]*?)\r?\n---/);
   if (!match) return null;
 
