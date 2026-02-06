@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Validate skill directories have SKILL.md with required structure
+ * スキルディレクトリが必要な構造のSKILL.mdを持っていることを検証
  */
 
 const fs = require('fs');

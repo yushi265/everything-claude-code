@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Validate command markdown files are non-empty and readable
+ * コマンドMarkdownファイルが空でなく読み取り可能であることを検証
  */
 
 const fs = require('fs');
@@ -21,7 +21,7 @@ function validateCommands() {
     const filePath = path.join(COMMANDS_DIR, file);
     const content = fs.readFileSync(filePath, 'utf-8');
 
-    // Validate the file is non-empty readable markdown
+    // ファイルが空でない読み取り可能なMarkdownであることを検証
     if (content.trim().length === 0) {
       console.error(`ERROR: ${file} - Empty command file`);
       hasErrors = true;

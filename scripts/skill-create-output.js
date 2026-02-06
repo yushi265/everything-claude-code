@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /**
- * Skill Creator - Pretty Output Formatter
+ * スキルクリエイター - 整形出力フォーマッター
  *
- * Creates beautiful terminal output for the /skill-create command
- * similar to @mvanhorn's /last30days skill
+ * /skill-createコマンドのための美しいターミナル出力を作成
+ * @mvanhornの/last30daysスキルに似た形式
  */
 
-// ANSI color codes - no external dependencies
+// ANSIカラーコード - 外部依存なし
 const chalk = {
   bold: (s) => `\x1b[1m${s}\x1b[0m`,
   cyan: (s) => `\x1b[36m${s}\x1b[0m`,
@@ -20,7 +20,7 @@ const chalk = {
   bgCyan: (s) => `\x1b[46m${s}\x1b[0m`,
 };
 
-// Box drawing characters
+// ボックス描画文字
 const BOX = {
   topLeft: '╭',
   topRight: '╮',
@@ -32,10 +32,10 @@ const BOX = {
   verticalLeft: '┤',
 };
 
-// Progress spinner frames
+// 進行状況スピナーフレーム
 const SPINNER = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
 
-// Helper functions
+// ヘルパー関数
 function box(title, content, width = 60) {
   const lines = content.split('\n');
   const top = `${BOX.topLeft}${BOX.horizontal} ${chalk.bold(chalk.cyan(title))} ${BOX.horizontal.repeat(width - title.length - 5)}${BOX.topRight}`;
@@ -48,6 +48,7 @@ function box(title, content, width = 60) {
 }
 
 function stripAnsi(str) {
+  // ANSI エスケープシーケンスを除去
   // eslint-disable-next-line no-control-regex
   return str.replace(/\x1b\[[0-9;]*m/g, '');
 }
@@ -77,7 +78,7 @@ async function animateProgress(label, steps, callback) {
   }
 }
 
-// Main output formatter
+// メイン出力フォーマッター
 class SkillCreateOutput {
   constructor(repoName, options = {}) {
     this.repoName = repoName;
@@ -173,7 +174,7 @@ ${chalk.yellow('4.')} Evolve into skills: ${chalk.cyan('/evolve')}
   }
 }
 
-// Demo function to show the output
+// 出力を表示するデモ関数
 async function demo() {
   const output = new SkillCreateOutput('PMX');
 
@@ -235,10 +236,10 @@ async function demo() {
   output.footer();
 }
 
-// Export for use in other scripts
+// 他のスクリプトで使用するためにエクスポート
 module.exports = { SkillCreateOutput, demo };
 
-// Run demo if executed directly
+// 直接実行された場合はデモを実行
 if (require.main === module) {
   demo().catch(console.error);
 }

@@ -1,6 +1,6 @@
 /**
- * Session Aliases Library for Claude Code
- * Manages session aliases stored in ~/.claude/session-aliases.json
+ * Claude Code用セッションエイリアスライブラリ
+ * ~/.claude/session-aliases.json に保存されたセッションエイリアスを管理します
  */
 
 const fs = require('fs');
@@ -14,16 +14,16 @@ const {
   log
 } = require('./utils');
 
-// Aliases file path
+// エイリアスファイルパス
 function getAliasesPath() {
   return path.join(getClaudeDir(), 'session-aliases.json');
 }
 
-// Current alias storage format version
+// 現在のエイリアスストレージフォーマットバージョン
 const ALIAS_VERSION = '1.0';
 
 /**
- * Default aliases file structure
+ * デフォルトのエイリアスファイル構造
  */
 function getDefaultAliases() {
   return {
@@ -37,8 +37,8 @@ function getDefaultAliases() {
 }
 
 /**
- * Load aliases from file
- * @returns {object} Aliases object
+ * ファイルからエイリアスを読み込む
+ * @returns {object} エイリアスオブジェクト
  */
 function loadAliases() {
   const aliasesPath = getAliasesPath();
@@ -55,18 +55,18 @@ function loadAliases() {
   try {
     const data = JSON.parse(content);
 
-    // Validate structure
+    // 構造を検証
     if (!data.aliases || typeof data.aliases !== 'object') {
       log('[Aliases] Invalid aliases file structure, resetting');
       return getDefaultAliases();
     }
 
-    // Ensure version field
+    // versionフィールドを確保
     if (!data.version) {
       data.version = ALIAS_VERSION;
     }
 
-    // Ensure metadata
+    // メタデータを確保
     if (!data.metadata) {
       data.metadata = {
         totalCount: Object.keys(data.aliases).length,
@@ -82,9 +82,9 @@ function loadAliases() {
 }
 
 /**
- * Save aliases to file with atomic write
- * @param {object} aliases - Aliases object to save
- * @returns {boolean} Success status
+ * アトミックライトでエイリアスをファイルに保存
+ * @param {object} aliases - 保存するエイリアスオブジェクト
+ * @returns {boolean} 成功ステータス
  */
 function saveAliases(aliases) {
   const aliasesPath = getAliasesPath();
@@ -92,7 +92,7 @@ function saveAliases(aliases) {
   const backupPath = aliasesPath + '.bak';
 
   try {
-    // Update metadata
+    // メタデータを更新
     aliases.metadata = {
       totalCount: Object.keys(aliases.aliases).length,
       lastUpdated: new Date().toISOString()
@@ -100,24 +100,24 @@ function saveAliases(aliases) {
 
     const content = JSON.stringify(aliases, null, 2);
 
-    // Ensure directory exists
+    // ディレクトリの存在を確認
     ensureDir(path.dirname(aliasesPath));
 
-    // Create backup if file exists
+    // ファイルが存在する場合はバックアップを作成
     if (fs.existsSync(aliasesPath)) {
       fs.copyFileSync(aliasesPath, backupPath);
     }
 
-    // Atomic write: write to temp file, then rename
+    // アトミックライト: 一時ファイルに書き込み、その後リネーム
     fs.writeFileSync(tempPath, content, 'utf8');
 
-    // On Windows, we need to delete the target file before renaming
+    // Windowsでは、リネーム前にターゲットファイルを削除する必要がある
     if (fs.existsSync(aliasesPath)) {
       fs.unlinkSync(aliasesPath);
     }
     fs.renameSync(tempPath, aliasesPath);
 
-    // Remove backup on success
+    // 成功時にバックアップを削除
     if (fs.existsSync(backupPath)) {
       fs.unlinkSync(backupPath);
     }
@@ -126,7 +126,7 @@ function saveAliases(aliases) {
   } catch (err) {
     log(`[Aliases] Error saving aliases: ${err.message}`);
 
-    // Restore from backup if exists
+    // バックアップが存在する場合は復元
     if (fs.existsSync(backupPath)) {
       try {
         fs.copyFileSync(backupPath, aliasesPath);
@@ -136,7 +136,7 @@ function saveAliases(aliases) {
       }
     }
 
-    // Clean up temp file
+    // 一時ファイルをクリーンアップ
     if (fs.existsSync(tempPath)) {
       fs.unlinkSync(tempPath);
     }
@@ -146,12 +146,12 @@ function saveAliases(aliases) {
 }
 
 /**
- * Resolve an alias to get session path
- * @param {string} alias - Alias name to resolve
- * @returns {object|null} Alias data or null if not found
+ * エイリアスを解決してセッションパスを取得
+ * @param {string} alias - 解決するエイリアス名
+ * @returns {object|null} エイリアスデータ、見つからない場合はnull
  */
 function resolveAlias(alias) {
-  // Validate alias name (alphanumeric, dash, underscore)
+  // エイリアス名を検証 (英数字、ダッシュ、アンダースコア)
   if (!/^[a-zA-Z0-9_-]+$/.test(alias)) {
     return null;
   }
@@ -172,14 +172,14 @@ function resolveAlias(alias) {
 }
 
 /**
- * Set or update an alias for a session
- * @param {string} alias - Alias name (alphanumeric, dash, underscore)
- * @param {string} sessionPath - Session directory path
- * @param {string} title - Optional title for the alias
- * @returns {object} Result with success status and message
+ * セッションのエイリアスを設定または更新
+ * @param {string} alias - エイリアス名 (英数字、ダッシュ、アンダースコア)
+ * @param {string} sessionPath - セッションディレクトリパス
+ * @param {string} title - エイリアスのオプションタイトル
+ * @returns {object} 成功ステータスとメッセージを含む結果
  */
 function setAlias(alias, sessionPath, title = null) {
-  // Validate alias name
+  // エイリアス名を検証
   if (!alias || alias.length === 0) {
     return { success: false, error: 'Alias name cannot be empty' };
   }
@@ -188,7 +188,7 @@ function setAlias(alias, sessionPath, title = null) {
     return { success: false, error: 'Alias name must contain only letters, numbers, dashes, and underscores' };
   }
 
-  // Reserved alias names
+  // 予約されたエイリアス名
   const reserved = ['list', 'help', 'remove', 'delete', 'create', 'set'];
   if (reserved.includes(alias.toLowerCase())) {
     return { success: false, error: `'${alias}' is a reserved alias name` };
@@ -219,11 +219,11 @@ function setAlias(alias, sessionPath, title = null) {
 }
 
 /**
- * List all aliases
- * @param {object} options - Options object
- * @param {string} options.search - Filter aliases by name (partial match)
- * @param {number} options.limit - Maximum number of aliases to return
- * @returns {Array} Array of alias objects
+ * すべてのエイリアスをリスト表示
+ * @param {object} options - オプションオブジェクト
+ * @param {string} options.search - 名前でエイリアスをフィルタ (部分一致)
+ * @param {number} options.limit - 返す最大エイリアス数
+ * @returns {Array} エイリアスオブジェクトの配列
  */
 function listAliases(options = {}) {
   const { search = null, limit = null } = options;
@@ -237,10 +237,10 @@ function listAliases(options = {}) {
     title: info.title
   }));
 
-  // Sort by updated time (newest first)
+  // 更新時刻でソート (新しい順)
   aliases.sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt));
 
-  // Apply search filter
+  // 検索フィルタを適用
   if (search) {
     const searchLower = search.toLowerCase();
     aliases = aliases.filter(a =>
@@ -249,7 +249,7 @@ function listAliases(options = {}) {
     );
   }
 
-  // Apply limit
+  // 上限を適用
   if (limit && limit > 0) {
     aliases = aliases.slice(0, limit);
   }

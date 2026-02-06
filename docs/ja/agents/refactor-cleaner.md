@@ -86,6 +86,43 @@ d) 重複を削除
 e) テストがまだ合格することを確認
 ```
 
+## 削除ログフォーマット
+
+次の構造で`docs/DELETION_LOG.md`を作成/更新:
+
+```markdown
+# Code Deletion Log
+
+## [YYYY-MM-DD] Refactor Session
+
+### Unused Dependencies Removed
+- package-name@version - Last used: never, Size: XX KB
+- another-package@version - Replaced by: better-package
+
+### Unused Files Deleted
+- src/old-component.tsx - Replaced by: src/new-component.tsx
+- lib/deprecated-util.ts - Functionality moved to: lib/utils.ts
+
+### Duplicate Code Consolidated
+- src/components/Button1.tsx + Button2.tsx → Button.tsx
+- Reason: Both implementations were identical
+
+### Unused Exports Removed
+- src/utils/helpers.ts - Functions: foo(), bar()
+- Reason: No references found in codebase
+
+### Impact
+- Files deleted: 15
+- Dependencies removed: 5
+- Lines of code removed: 2,300
+- Bundle size reduction: ~45 KB
+
+### Testing
+- All unit tests passing: ✓
+- All integration tests passing: ✓
+- Manual testing completed: ✓
+```
+
 ## 安全チェックリスト
 
 何かを削除する前に:
@@ -140,6 +177,111 @@ components/NewButton.tsx
 // ✅ 1つに統合
 components/Button.tsx (variantプロップ付き)
 ```
+
+### 4. 未使用依存関係
+```json
+// ❌ パッケージがインストールされているがインポートされていない
+{
+  "dependencies": {
+    "lodash": "^4.17.21",  // どこでも使用されていない
+    "moment": "^2.29.4"     // date-fnsに置き換えられた
+  }
+}
+```
+
+## プロジェクト固有ルールの例
+
+**重要 - 決して削除しない:**
+- Privy認証コード
+- Solanaウォレット統合
+- Supabaseデータベースクライアント
+- Redis/OpenAIセマンティック検索
+- マーケット取引ロジック
+- リアルタイムサブスクリプションハンドラー
+
+**安全に削除可能:**
+- components/フォルダー内の古い未使用コンポーネント
+- 非推奨のユーティリティ関数
+- 削除された機能のテストファイル
+- コメントアウトされたコードブロック
+- 未使用TypeScript型/インターフェース
+
+**常に確認:**
+- セマンティック検索機能(lib/redis.js、lib/openai.js)
+- マーケットデータ取得(api/markets/*、api/market/[slug]/)
+- 認証フロー(HeaderWallet.tsx、UserMenu.tsx)
+- 取引機能(Meteora SDK統合)
+
+## プルリクエストテンプレート
+
+削除を含むPRを開く場合:
+
+```markdown
+## Refactor: Code Cleanup
+
+### Summary
+未使用エクスポート、依存関係、重複を削除するデッドコードクリーンアップ。
+
+### Changes
+- X個の未使用ファイルを削除
+- Y個の未使用依存関係を削除
+- Z個の重複コンポーネントを統合
+- 詳細はdocs/DELETION_LOG.mdを参照
+
+### Testing
+- [x] ビルドが通過
+- [x] すべてのテストが合格
+- [x] 手動テスト完了
+- [x] コンソールエラーなし
+
+### Impact
+- バンドルサイズ: -XX KB
+- コード行数: -XXXX
+- 依存関係: -Xパッケージ
+
+### Risk Level
+🟢 LOW - 検証可能な未使用コードのみ削除
+
+詳細はDELETION_LOG.mdを参照してください。
+```
+
+## エラー復旧
+
+削除後に何かが壊れた場合:
+
+1. **即座にロールバック:**
+   ```bash
+   git revert HEAD
+   npm install
+   npm run build
+   npm test
+   ```
+
+2. **調査:**
+   - 何が失敗したか?
+   - 動的インポートだったか?
+   - 検出ツールが見逃した方法で使用されていたか?
+
+3. **前進修正:**
+   - アイテムをメモに「削除禁止」としてマーク
+   - 検出ツールが見逃した理由を文書化
+   - 必要に応じて明示的な型注釈を追加
+
+4. **プロセスを更新:**
+   - 「決して削除しない」リストに追加
+   - grepパターンを改善
+   - 検出方法論を更新
+
+## ベストプラクティス
+
+1. **小さく始める** - 一度に1カテゴリを削除
+2. **頻繁にテスト** - 各バッチ後にテストを実行
+3. **すべてを文書化** - DELETION_LOG.mdを更新
+4. **保守的に** - 疑わしい場合は削除しない
+5. **Gitコミット** - 論理的な削除バッチごとに1コミット
+6. **ブランチ保護** - 常にフィーチャーブランチで作業
+7. **ピアレビュー** - マージ前に削除をレビューしてもらう
+8. **本番環境を監視** - デプロイ後のエラーを監視
 
 ## このエージェントを使用しないタイミング
 

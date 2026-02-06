@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 /**
- * Continuous Learning - Session Evaluator
+ * 継続的学習 - セッション評価器
  *
- * Cross-platform (Windows, macOS, Linux)
+ * クロスプラットフォーム対応 (Windows, macOS, Linux)
  *
- * Runs on Stop hook to extract reusable patterns from Claude Code sessions
+ * Stopフックで実行され、Claude Codeセッションから再利用可能なパターンを抽出します
  *
- * Why Stop hook instead of UserPromptSubmit:
- * - Stop runs once at session end (lightweight)
- * - UserPromptSubmit runs every message (heavy, adds latency)
+ * UserPromptSubmitではなくStopフックを使用する理由:
+ * - Stopはセッション終了時に一度だけ実行される (軽量)
+ * - UserPromptSubmitは毎メッセージ実行される (重く、レイテンシを追加)
  */
 
 const path = require('path');
@@ -22,15 +22,15 @@ const {
 } = require('../lib/utils');
 
 async function main() {
-  // Get script directory to find config
+  // 設定ファイルを見つけるためにスクリプトディレクトリを取得
   const scriptDir = __dirname;
   const configFile = path.join(scriptDir, '..', '..', 'skills', 'continuous-learning', 'config.json');
 
-  // Default configuration
+  // デフォルト設定
   let minSessionLength = 10;
   let learnedSkillsPath = getLearnedSkillsDir();
 
-  // Load config if exists
+  // 設定ファイルが存在する場合は読み込む
   const configContent = readFile(configFile);
   if (configContent) {
     try {
@@ -38,34 +38,34 @@ async function main() {
       minSessionLength = config.min_session_length || 10;
 
       if (config.learned_skills_path) {
-        // Handle ~ in path
+        // パス内の~を処理
         learnedSkillsPath = config.learned_skills_path.replace(/^~/, require('os').homedir());
       }
     } catch {
-      // Invalid config, use defaults
+      // 不正な設定の場合、デフォルトを使用
     }
   }
 
-  // Ensure learned skills directory exists
+  // 学習したスキルのディレクトリが存在することを確認
   ensureDir(learnedSkillsPath);
 
-  // Get transcript path from environment (set by Claude Code)
+  // 環境変数からトランスクリプトパスを取得 (Claude Codeによって設定される)
   const transcriptPath = process.env.CLAUDE_TRANSCRIPT_PATH;
 
   if (!transcriptPath || !fs.existsSync(transcriptPath)) {
     process.exit(0);
   }
 
-  // Count user messages in session
+  // セッション内のユーザーメッセージ数をカウント
   const messageCount = countInFile(transcriptPath, /"type":"user"/g);
 
-  // Skip short sessions
+  // 短いセッションはスキップ
   if (messageCount < minSessionLength) {
     log(`[ContinuousLearning] Session too short (${messageCount} messages), skipping`);
     process.exit(0);
   }
 
-  // Signal to Claude that session should be evaluated for extractable patterns
+  // 抽出可能なパターンのためにセッションを評価すべきことをClaudeに通知
   log(`[ContinuousLearning] Session has ${messageCount} messages - evaluate for extractable patterns`);
   log(`[ContinuousLearning] Save learned skills to: ${learnedSkillsPath}`);
 

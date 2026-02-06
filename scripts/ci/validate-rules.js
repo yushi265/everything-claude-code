@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Validate rule markdown files
+ * ルールMarkdownファイルを検証
  */
 
 const fs = require('fs');

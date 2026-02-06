@@ -7,15 +7,15 @@ description: 認証追加、ユーザー入力処理、シークレット操作�
 
 このスキルは、すべてのコードがセキュリティベストプラクティスに従い、潜在的な脆弱性を特定することを保証します。
 
-## 有効化タイミング
+## 起動タイミング
 
-- 認証または認可の実装
-- ユーザー入力またはファイルアップロードの処理
-- 新しいAPIエンドポイントの作成
-- シークレットまたは認証情報の操作
-- 支払い機能の実装
-- 機密データの保存または送信
-- サードパーティAPIの統合
+- 認証または認可を実装する場合
+- ユーザー入力またはファイルアップロードを処理する場合
+- 新しいAPIエンドポイントを作成する場合
+- シークレットまたは認証情報を操作する場合
+- 支払い機能を実装する場合
+- 機密データを保存または送信する場合
+- サードパーティAPIを統合する場合
 
 ## セキュリティチェックリスト
 
@@ -168,7 +168,7 @@ export async function deleteUser(userId: string, requesterId: string) {
 }
 ```
 
-#### Row Level Security (Supabase)
+#### Row Level Security（Supabase）
 ```sql
 -- すべてのテーブルでRLSを有効化
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
@@ -335,7 +335,60 @@ catch (error) {
 - [ ] 詳細なエラーはサーバーログのみ
 - [ ] ユーザーにスタックトレースを露出しない
 
-### 9. 依存関係セキュリティ
+### 9. ブロックチェーンセキュリティ（Solana）
+
+#### ウォレット検証
+```typescript
+import { verify } from '@solana/web3.js'
+
+async function verifyWalletOwnership(
+  publicKey: string,
+  signature: string,
+  message: string
+) {
+  try {
+    const isValid = verify(
+      Buffer.from(message),
+      Buffer.from(signature, 'base64'),
+      Buffer.from(publicKey, 'base64')
+    )
+    return isValid
+  } catch (error) {
+    return false
+  }
+}
+```
+
+#### トランザクション検証
+```typescript
+async function verifyTransaction(transaction: Transaction) {
+  // 受取人を確認
+  if (transaction.to !== expectedRecipient) {
+    throw new Error('Invalid recipient')
+  }
+
+  // 金額を確認
+  if (transaction.amount > maxAmount) {
+    throw new Error('Amount exceeds limit')
+  }
+
+  // ユーザーが十分な残高を持っているか確認
+  const balance = await getBalance(transaction.from)
+  if (balance < transaction.amount) {
+    throw new Error('Insufficient balance')
+  }
+
+  return true
+}
+```
+
+#### 検証ステップ
+- [ ] ウォレット署名を検証
+- [ ] トランザクション詳細を検証
+- [ ] トランザクション前の残高チェック
+- [ ] ブラインドトランザクション署名なし
+
+### 10. 依存関係セキュリティ
 
 #### 定期的な更新
 ```bash
@@ -368,9 +421,49 @@ npm ci  # npm installの代わりに
 - [ ] GitHubでDependabotを有効化
 - [ ] 定期的なセキュリティ更新
 
+## セキュリティテスト
+
+### 自動化されたセキュリティテスト
+```typescript
+// 認証をテスト
+test('requires authentication', async () => {
+  const response = await fetch('/api/protected')
+  expect(response.status).toBe(401)
+})
+
+// 認可をテスト
+test('requires admin role', async () => {
+  const response = await fetch('/api/admin', {
+    headers: { Authorization: `Bearer ${userToken}` }
+  })
+  expect(response.status).toBe(403)
+})
+
+// 入力バリデーションをテスト
+test('rejects invalid input', async () => {
+  const response = await fetch('/api/users', {
+    method: 'POST',
+    body: JSON.stringify({ email: 'not-an-email' })
+  })
+  expect(response.status).toBe(400)
+})
+
+// レート制限をテスト
+test('enforces rate limits', async () => {
+  const requests = Array(101).fill(null).map(() =>
+    fetch('/api/endpoint')
+  )
+
+  const responses = await Promise.all(requests)
+  const tooManyRequests = responses.filter(r => r.status === 429)
+
+  expect(tooManyRequests.length).toBeGreaterThan(0)
+})
+```
+
 ## デプロイ前セキュリティチェックリスト
 
-本番デプロイ前に必ず:
+本番デプロイ前に必ず：
 
 - [ ] **シークレット**: ハードコードされたシークレットなし、すべて環境変数に
 - [ ] **入力バリデーション**: すべてのユーザー入力を検証
@@ -388,6 +481,7 @@ npm ci  # npm installの代わりに
 - [ ] **Row Level Security**: Supabaseで有効化
 - [ ] **CORS**: 適切に設定
 - [ ] **ファイルアップロード**: 検証済み（サイズ、タイプ）
+- [ ] **ウォレット署名**: 検証済み（ブロックチェーンの場合）
 
 ## リソース
 
@@ -398,4 +492,4 @@ npm ci  # npm installの代わりに
 
 ---
 
-**覚えておくこと**: セキュリティはオプションではありません。1つの脆弱性がプラットフォーム全体を危険にさらす可能性があります。疑わしい場合は、慎重に行動してください。
+**覚えておいてください**: セキュリティはオプションではありません。1つの脆弱性がプラットフォーム全体を危険にさらす可能性があります。疑わしい場合は、慎重に行動してください。

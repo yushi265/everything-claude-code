@@ -1,9 +1,9 @@
 /**
- * Integration tests for hook scripts
+ * フックスクリプトの統合テスト
  *
- * Tests hook behavior in realistic scenarios with proper input/output handling.
+ * 適切な入出力処理を伴う現実的なシナリオでのフックの動作をテストします。
  *
- * Run with: node tests/integration/hooks.test.js
+ * 実行方法: node tests/integration/hooks.test.js
  */
 
 const assert = require('assert');
@@ -12,7 +12,7 @@ const fs = require('fs');
 const os = require('os');
 const { spawn } = require('child_process');
 
-// Test helper
+// テストヘルパー
 function _test(name, fn) {
   try {
     fn();
@@ -25,7 +25,7 @@ function _test(name, fn) {
   }
 }
 
-// Async test helper
+// 非同期テストヘルパー
 async function asyncTest(name, fn) {
   try {
     await fn();
@@ -39,10 +39,10 @@ async function asyncTest(name, fn) {
 }
 
 /**
- * Run a hook script with simulated Claude Code input
- * @param {string} scriptPath - Path to the hook script
- * @param {object} input - Hook input object (will be JSON stringified)
- * @param {object} env - Environment variables
+ * シミュレートされたClaude Code入力でフックスクリプトを実行
+ * @param {string} scriptPath - フックスクリプトへのパス
+ * @param {object} input - フック入力オブジェクト (JSON文字列化される)
+ * @param {object} env - 環境変数
  * @returns {Promise<{code: number, stdout: string, stderr: string}>}
  */
 function runHookWithInput(scriptPath, input = {}, env = {}, timeoutMs = 10000) {
@@ -58,14 +58,14 @@ function runHookWithInput(scriptPath, input = {}, env = {}, timeoutMs = 10000) {
     proc.stdout.on('data', data => stdout += data);
     proc.stderr.on('data', data => stderr += data);
 
-    // Ignore EPIPE errors (process may exit before we finish writing)
+    // EPIPEエラーを無視 (書き込みが終わる前にプロセスが終了する可能性がある)
     proc.stdin.on('error', (err) => {
       if (err.code !== 'EPIPE') {
         reject(err);
       }
     });
 
-    // Send JSON input on stdin (simulating Claude Code hook invocation)
+    // stdinにJSON入力を送信 (Claude Codeフック呼び出しをシミュレート)
     if (input && Object.keys(input).length > 0) {
       proc.stdin.write(JSON.stringify(input));
     }
@@ -89,14 +89,14 @@ function runHookWithInput(scriptPath, input = {}, env = {}, timeoutMs = 10000) {
 }
 
 /**
- * Run an inline hook command (like those in hooks.json)
- * @param {string} command - The node -e "..." command
- * @param {object} input - Hook input object
- * @param {object} env - Environment variables
+ * インラインフックコマンドを実行 (hooks.jsonのようなもの)
+ * @param {string} command - node -e "..." コマンド
+ * @param {object} input - フック入力オブジェクト
+ * @param {object} env - 環境変数
  */
 function _runInlineHook(command, input = {}, env = {}, timeoutMs = 10000) {
   return new Promise((resolve, reject) => {
-    // Extract the code from node -e "..."
+    // node -e "..." からコードを抽出
     const match = command.match(/^node -e "(.+)"$/s);
     if (!match) {
       reject(new Error('Invalid inline hook command format'));
@@ -115,7 +115,7 @@ function _runInlineHook(command, input = {}, env = {}, timeoutMs = 10000) {
     proc.stdout.on('data', data => stdout += data);
     proc.stderr.on('data', data => stderr += data);
 
-    // Ignore EPIPE errors (process may exit before we finish writing)
+    // EPIPEエラーを無視 (書き込みが終わる前にプロセスが終了する可能性がある)
     proc.stdin.on('error', (err) => {
       if (err.code !== 'EPIPE') {
         if (timer) clearTimeout(timer);
@@ -145,17 +145,17 @@ function _runInlineHook(command, input = {}, env = {}, timeoutMs = 10000) {
   });
 }
 
-// Create a temporary test directory
+// 一時テストディレクトリを作成
 function createTestDir() {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'hook-integration-test-'));
 }
 
-// Clean up test directory
+// テストディレクトリをクリーンアップ
 function cleanupTestDir(testDir) {
   fs.rmSync(testDir, { recursive: true, force: true });
 }
 
-// Test suite
+// テストスイート
 async function runTests() {
   console.log('\n=== Hook Integration Tests ===\n');
 

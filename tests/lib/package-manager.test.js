@@ -1,7 +1,7 @@
 /**
- * Tests for scripts/lib/package-manager.js
+ * scripts/lib/package-manager.js のテスト
  *
- * Run with: node tests/lib/package-manager.test.js
+ * 実行方法: node tests/lib/package-manager.test.js
  */
 
 const assert = require('assert');
@@ -9,10 +9,10 @@ const path = require('path');
 const fs = require('fs');
 const os = require('os');
 
-// Import the modules
+// モジュールをインポート
 const pm = require('../../scripts/lib/package-manager');
 
-// Test helper
+// テストヘルパー
 function test(name, fn) {
   try {
     fn();
@@ -25,26 +25,26 @@ function test(name, fn) {
   }
 }
 
-// Create a temporary test directory
+// 一時テストディレクトリを作成
 function createTestDir() {
   const testDir = path.join(os.tmpdir(), `pm-test-${Date.now()}`);
   fs.mkdirSync(testDir, { recursive: true });
   return testDir;
 }
 
-// Clean up test directory
+// テストディレクトリをクリーンアップ
 function cleanupTestDir(testDir) {
   fs.rmSync(testDir, { recursive: true, force: true });
 }
 
-// Test suite
+// テストスイート
 function runTests() {
   console.log('\n=== Testing package-manager.js ===\n');
 
   let passed = 0;
   let failed = 0;
 
-  // PACKAGE_MANAGERS constant tests
+  // PACKAGE_MANAGERS 定数のテスト
   console.log('PACKAGE_MANAGERS Constant:');
 
   if (test('PACKAGE_MANAGERS has all expected managers', () => {

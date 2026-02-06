@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Validate hooks.json schema
+ * hooks.jsonのスキーマを検証
  */
 
 const fs = require('fs');
@@ -23,13 +23,13 @@ function validateHooks() {
     process.exit(1);
   }
 
-  // Support both object format { hooks: {...} } and array format
+  // オブジェクト形式 { hooks: {...} } と配列形式の両方をサポート
   const hooks = data.hooks || data;
   let hasErrors = false;
   let totalMatchers = 0;
 
   if (typeof hooks === 'object' && !Array.isArray(hooks)) {
-    // Object format: { EventType: [matchers] }
+    // オブジェクト形式: { EventType: [matchers] }
     for (const [eventType, matchers] of Object.entries(hooks)) {
       if (!VALID_EVENTS.includes(eventType)) {
         console.error(`ERROR: Invalid event type: ${eventType}`);
@@ -58,7 +58,7 @@ function validateHooks() {
           console.error(`ERROR: ${eventType}[${i}] missing 'hooks' array`);
           hasErrors = true;
         } else {
-          // Validate each hook entry
+          // 各フックエントリを検証
           for (let j = 0; j < matcher.hooks.length; j++) {
             const hook = matcher.hooks[j];
             if (!hook.type || typeof hook.type !== 'string') {
@@ -75,7 +75,7 @@ function validateHooks() {
       }
     }
   } else if (Array.isArray(hooks)) {
-    // Array format (legacy)
+    // 配列形式 (レガシー)
     for (let i = 0; i < hooks.length; i++) {
       const hook = hooks[i];
       if (!hook.matcher) {
@@ -86,7 +86,7 @@ function validateHooks() {
         console.error(`ERROR: Hook ${i} missing 'hooks' array`);
         hasErrors = true;
       } else {
-        // Validate each hook entry
+        // 各フックエントリを検証
         for (let j = 0; j < hook.hooks.length; j++) {
           const h = hook.hooks[j];
           if (!h.type || typeof h.type !== 'string') {

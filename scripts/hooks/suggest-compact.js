@@ -1,16 +1,16 @@
 #!/usr/bin/env node
 /**
- * Strategic Compact Suggester
+ * 戦略的コンパクト提案ツール
  *
- * Cross-platform (Windows, macOS, Linux)
+ * クロスプラットフォーム対応 (Windows, macOS, Linux)
  *
- * Runs on PreToolUse or periodically to suggest manual compaction at logical intervals
+ * PreToolUseで実行されるか定期的に実行され、論理的な間隔で手動コンパクションを提案します
  *
- * Why manual over auto-compact:
- * - Auto-compact happens at arbitrary points, often mid-task
- * - Strategic compacting preserves context through logical phases
- * - Compact after exploration, before execution
- * - Compact after completing a milestone, before starting next
+ * 自動コンパクトではなく手動を使用する理由:
+ * - 自動コンパクトは任意のポイントで発生し、しばしばタスクの途中
+ * - 戦略的なコンパクションは論理的なフェーズを通してコンテキストを保持
+ * - 探索後、実行前にコンパクト
+ * - マイルストーン完了後、次のタスク開始前にコンパクト
  */
 
 const path = require('path');
@@ -22,30 +22,29 @@ const {
 } = require('../lib/utils');
 
 async function main() {
-  // Track tool call count (increment in a temp file)
-  // Use a session-specific counter file based on PID from parent process
-  // or session ID from environment
+  // ツール呼び出し回数を追跡 (一時ファイルでインクリメント)
+  // 親プロセスのPIDまたは環境変数のセッションIDに基づいてセッション固有のカウンターファイルを使用
   const sessionId = process.env.CLAUDE_SESSION_ID || process.ppid || 'default';
   const counterFile = path.join(getTempDir(), `claude-tool-count-${sessionId}`);
   const threshold = parseInt(process.env.COMPACT_THRESHOLD || '50', 10);
 
   let count = 1;
 
-  // Read existing count or start at 1
+  // 既存のカウントを読み取るか、1から開始
   const existing = readFile(counterFile);
   if (existing) {
     count = parseInt(existing.trim(), 10) + 1;
   }
 
-  // Save updated count
+  // 更新されたカウントを保存
   writeFile(counterFile, String(count));
 
-  // Suggest compact after threshold tool calls
+  // 閾値のツール呼び出し後にコンパクトを提案
   if (count === threshold) {
     log(`[StrategicCompact] ${threshold} tool calls reached - consider /compact if transitioning phases`);
   }
 
-  // Suggest at regular intervals after threshold
+  // 閾値後の定期的な間隔で提案
   if (count > threshold && count % 25 === 0) {
     log(`[StrategicCompact] ${count} tool calls - good checkpoint for /compact if context is stale`);
   }

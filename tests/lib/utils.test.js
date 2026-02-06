@@ -1,17 +1,17 @@
 /**
- * Tests for scripts/lib/utils.js
+ * scripts/lib/utils.js のテスト
  *
- * Run with: node tests/lib/utils.test.js
+ * 実行方法: node tests/lib/utils.test.js
  */
 
 const assert = require('assert');
 const path = require('path');
 const fs = require('fs');
 
-// Import the module
+// モジュールをインポート
 const utils = require('../../scripts/lib/utils');
 
-// Test helper
+// テストヘルパー
 function test(name, fn) {
   try {
     fn();
@@ -24,14 +24,14 @@ function test(name, fn) {
   }
 }
 
-// Test suite
+// テストスイート
 function runTests() {
   console.log('\n=== Testing utils.js ===\n');
 
   let passed = 0;
   let failed = 0;
 
-  // Platform detection tests
+  // プラットフォーム検出のテスト
   console.log('Platform Detection:');
 
   if (test('isWindows/isMacOS/isLinux are booleans', () => {
@@ -43,11 +43,11 @@ function runTests() {
   if (test('exactly one platform should be true', () => {
     const platforms = [utils.isWindows, utils.isMacOS, utils.isLinux];
     const trueCount = platforms.filter(p => p).length;
-    // Note: Could be 0 on other platforms like FreeBSD
+    // 注意: FreeBSDなどの他のプラットフォームでは0になる可能性がある
     assert.ok(trueCount <= 1, 'More than one platform is true');
   })) passed++; else failed++;
 
-  // Directory functions tests
+  // ディレクトリ関数のテスト
   console.log('\nDirectory Functions:');
 
   if (test('getHomeDir returns valid path', () => {
@@ -87,7 +87,7 @@ function runTests() {
     }
   })) passed++; else failed++;
 
-  // Date/Time functions tests
+  // 日付/時刻関数のテスト
   console.log('\nDate/Time Functions:');
 
   if (test('getDateString returns YYYY-MM-DD format', () => {
@@ -105,7 +105,7 @@ function runTests() {
     assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(dt), `Expected YYYY-MM-DD HH:MM:SS, got ${dt}`);
   })) passed++; else failed++;
 
-  // Project name tests
+  // プロジェクト名のテスト
   console.log('\nProject Name Functions:');
 
   if (test('getGitRepoName returns string or null', () => {
@@ -118,7 +118,7 @@ function runTests() {
     assert.ok(name && name.length > 0);
   })) passed++; else failed++;
 
-  // Session ID tests
+  // セッションIDのテスト
   console.log('\nSession ID Functions:');
 
   if (test('getSessionIdShort falls back to project name', () => {
@@ -154,7 +154,7 @@ function runTests() {
     }
   })) passed++; else failed++;
 
-  // File operations tests
+  // ファイル操作のテスト
   console.log('\nFile Operations:');
 
   if (test('readFile returns null for non-existent file', () => {
@@ -248,7 +248,7 @@ function runTests() {
     }
   })) passed++; else failed++;
 
-  // System functions tests
+  // システム関数のテスト
   console.log('\nSystem Functions:');
 
   if (test('commandExists finds node', () => {
@@ -272,7 +272,7 @@ function runTests() {
     assert.strictEqual(result.success, false);
   })) passed++; else failed++;
 
-  // Summary
+  // サマリー
   console.log('\n=== Test Results ===');
   console.log(`Passed: ${passed}`);
   console.log(`Failed: ${failed}`);
